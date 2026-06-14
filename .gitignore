@@ -1,22 +1,35 @@
-.env
-.venv
-.DS_Store
-.vscode
-.idea
-.pytest_cache
-.ruff_cache
-.mypy_cache
-.pytest_cache
-.ruff_cache
-.mypy_cache
-.pytest_cache
-.ruff_cache
-.mypy_cache
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
 
+# Env
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE / OS
+.DS_Store
+.vscode/
+.idea/
+
+# Local runtime / generated assets
 volumes/
 models/
-.venv/
-__pycache__/
-*.pyc
+*.log
 
+# Project specific
 /kangle/

@@ -1,0 +1,27 @@
+# --- Core ML / Embeddings ---
+sentence-transformers==3.3.1
+torch==2.5.1
+transformers==4.46.3
+huggingface-hub==0.26.2
+
+# --- Vector DB ---
+pymilvus==2.6.2
+
+# --- Data / Analysis ---
+pandas==2.2.3
+numpy==1.26.4
+scikit-learn==1.5.2
+matplotlib==3.9.2
+seaborn==0.13.2
+tqdm==4.67.1
+
+# --- API ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.0
+python-dotenv==1.0.1
+
+# --- Notebook ---
+ipykernel==6.29.5
+jupyter==1.1.1

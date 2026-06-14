@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   etcd:
     container_name: milvus-etcd
@@ -47,6 +45,17 @@ services:
     depends_on:
       - etcd
       - minio
+    restart: unless-stopped
+
+  attu:
+    container_name: milvus-attu
+    image: zilliz/attu:v2.6
+    environment:
+      MILVUS_URL: milvus:19530
+    ports:
+      - "8001:3000"
+    depends_on:
+      - milvus
     restart: unless-stopped
 
 networks:

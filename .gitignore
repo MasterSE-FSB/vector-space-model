@@ -14,3 +14,9 @@
 .mypy_cache
 
 volumes/
+models/
+.venv/
+__pycache__/
+*.pyc
+
+/kangle/

@@ -157,6 +157,8 @@ Swagger UI: **http://localhost:8000/docs**
 | POST | `/search` | Truy vấn free-text |
 | POST | `/search/similar` | Tìm anime tương tự (more-like-this) |
 | POST | `/search/compare` | So sánh kết quả 2 model |
+| POST | `/search/tfidf` | Truy vấn free-text bằng TF-IDF in-memory |
+| POST | `/search/tfidf/similar` | Tìm anime tương tự bằng TF-IDF in-memory |
 
 Ví dụ:
 
@@ -164,6 +166,22 @@ Ví dụ:
 curl -X POST http://localhost:8000/search \
   -H "Content-Type: application/json" \
   -d '{"query": "epic fantasy adventure with magic", "model": "e5-small-v2", "top_k": 5}'
+```
+
+TF-IDF free-text search:
+
+```bash
+curl -X POST http://localhost:8000/search/tfidf \
+  -H "Content-Type: application/json" \
+  -d '{"query": "epic fantasy adventure with magic", "top_k": 5}'
+```
+
+TF-IDF similar anime:
+
+```bash
+curl -X POST http://localhost:8000/search/tfidf/similar \
+  -H "Content-Type: application/json" \
+  -d '{"anime_name": "Naruto", "top_k": 5}'
 ```
 
 ---

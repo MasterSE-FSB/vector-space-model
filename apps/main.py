@@ -12,6 +12,7 @@ from apps.config import MODEL_REGISTRY, settings
 from apps.services import milvus_store
 from apps.router.import_router import router as import_router
 from apps.router.search_router import router as search_router
+from apps.router.tfidf import router as tfidf_router
 
 app = FastAPI(
     title="Anime Vector Space Model API",
@@ -24,6 +25,7 @@ app = FastAPI(
 
 app.include_router(import_router)
 app.include_router(search_router)
+app.include_router(tfidf_router)
 
 
 @app.get("/", tags=["meta"], summary="Thông tin & trạng thái")

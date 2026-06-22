@@ -7,11 +7,13 @@ Docs: http://localhost:8000/docs
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from apps.config import MODEL_REGISTRY, settings
 from apps.services import milvus_store
 from apps.router.import_router import router as import_router
 from apps.router.search_router import router as search_router
+from apps.router.tfidf import router as tfidf_router
 
 app = FastAPI(
     title="Anime Vector Space Model API",
@@ -24,6 +26,10 @@ app = FastAPI(
 
 app.include_router(import_router)
 app.include_router(search_router)
+app.include_router(tfidf_router)
+
+# Mount static files for Web UI
+app.mount("/ui", StaticFiles(directory="apps/static", html=True), name="ui")
 
 
 @app.get("/", tags=["meta"], summary="Thông tin & trạng thái")
@@ -36,6 +42,7 @@ def root():
         milvus_ok = False
     return {
         "service": "Anime Vector Space Model API",
+        "ui_url": "/ui/",
         "milvus": f"{settings.milvus_host}:{settings.milvus_port}",
         "milvus_connected": milvus_ok,
         "models": [
@@ -52,3 +59,4 @@ def models():
         k: {"hf_name": c.hf_name, "dim": c.dim, "collection": c.collection}
         for k, c in MODEL_REGISTRY.items()
     }
+

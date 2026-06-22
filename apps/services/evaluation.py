@@ -15,6 +15,7 @@ import pandas as pd
 
 from apps.services import milvus_store
 from apps.services.embedding import get_model
+from apps.services.tfidf_search import TFIDFSearchService
 
 
 def jaccard(a: frozenset, b: frozenset) -> float:
@@ -133,6 +134,57 @@ def evaluate_model(
         "encode_time_s": round(encode_time, 3),
         "search_time_s": round(search_time, 3),
         "ms_per_query": round(1000 * (encode_time + search_time) / max(len(query_ids), 1), 2),
+    }
+
+
+def evaluate_tfidf_model(
+    service: TFIDFSearchService,
+    relevance: dict[int, set[int]],
+    query_ids: list[int],
+    k: int = 10,
+    model_name: str = "TF-IDF baseline",
+) -> dict:
+    """Evaluate a fitted TF-IDF baseline with the same metrics as dense models.
+
+    Query = document của anime; cosine similarity chạy theo từng query trên sparse
+    matrix để không cần tạo ma trận NxN.
+    """
+    if service.df is None or service.matrix is None:
+        raise RuntimeError("TFIDFSearchService must be fitted before evaluation.")
+    if "anime_id" not in service.df.columns or "document" not in service.df.columns:
+        raise ValueError("TF-IDF evaluation requires 'anime_id' and 'document' columns.")
+
+    id_to_doc = dict(zip(service.df["anime_id"], service.df["document"]))
+
+    t0 = time.perf_counter()
+    precisions, recalls, rrs, ndcgs = [], [], [], []
+    for qid in query_ids:
+        query_doc = id_to_doc.get(qid)
+        if query_doc is None:
+            continue
+
+        hits = service.search(str(query_doc), top_k=k + 1)
+        retrieved = [int(h["anime_id"]) for h in hits if int(h["anime_id"]) != qid][:k]
+        rel = relevance.get(qid, set())
+        if not rel:
+            continue
+        precisions.append(precision_at_k(retrieved, rel, k))
+        recalls.append(recall_at_k(retrieved, rel, k))
+        rrs.append(reciprocal_rank(retrieved, rel))
+        ndcgs.append(ndcg_at_k(retrieved, rel, k))
+
+    total_time = time.perf_counter() - t0
+    n = len(precisions)
+    return {
+        "model": model_name,
+        "num_queries": n,
+        f"Precision@{k}": round(float(np.mean(precisions)), 4) if n else 0.0,
+        f"Recall@{k}": round(float(np.mean(recalls)), 4) if n else 0.0,
+        "MRR": round(float(np.mean(rrs)), 4) if n else 0.0,
+        f"nDCG@{k}": round(float(np.mean(ndcgs)), 4) if n else 0.0,
+        "encode_time_s": 0.0,
+        "search_time_s": round(total_time, 3),
+        "ms_per_query": round(1000 * total_time / max(len(query_ids), 1), 2),
     }
 
 

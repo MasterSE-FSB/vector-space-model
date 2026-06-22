@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Search VSM Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/ui/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo-icon">✨</div>
+                <div class="brand-text">
+                    <h1>Anime Search</h1>
+                    <span>Vector Space Model</span>
+                </div>
+            </div>
+
+            <!-- Tabs/Navigation -->
+            <nav class="nav-menu">
+                <button type="button" class="nav-item active" data-tab="semantic">
+                    <span class="icon">🔍</span>
+                    <span>Truy vấn Ngữ nghĩa</span>
+                </button>
+                <button type="button" class="nav-item" data-tab="tfidf">
+                    <span class="icon">🏷️</span>
+                    <span>Tìm kiếm TF-IDF</span>
+                </button>
+                <button type="button" class="nav-item" data-tab="similar">
+                    <span class="icon">🌀</span>
+                    <span>Anime Tương tự</span>
+                </button>
+                <button type="button" class="nav-item" data-tab="compare">
+                    <span class="icon">⚖️</span>
+                    <span>So sánh Model</span>
+                </button>
+            </nav>
+            
+            <!-- Configuration Options -->
+            <div class="config-panel">
+                <h3>Tham số</h3>
+                
+                <div class="form-group" id="model-select-group">
+                    <label for="search-model">Embedding Model</label>
+                    <select id="search-model" class="custom-select">
+                        <!-- Will be populated dynamically -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="top-k">Số lượng kết quả (Top K): <span id="top-k-val">10</span></label>
+                    <input type="range" id="top-k" min="1" max="50" value="10" class="custom-slider">
+                </div>
+            </div>
+
+            <!-- Server Status -->
+            <div class="status-panel">
+                <div class="status-header">
+                    <span class="status-indicator online" id="milvus-status-dot"></span>
+                    <span id="milvus-status-text">Milvus: Connecting...</span>
+                </div>
+                <div class="status-details" id="status-details">
+                    <!-- Dynamic details go here -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top search bar area -->
+            <header class="search-header">
+                <form id="search-form" class="search-form">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="search-query" placeholder="Nhập tên anime hoặc mô tả ngữ nghĩa (ví dụ: 'fantasy adventure with magic')..." required autocomplete="off">
+                        <button type="submit" class="btn-search">Tìm kiếm</button>
+                    </div>
+                </form>
+            </header>
+
+            <!-- Content dynamic container -->
+            <section class="results-container">
+                <!-- Idle State -->
+                <div class="state-view id-state" id="idle-view">
+                    <div class="lottie-placeholder">🎬</div>
+                    <h2>Sẵn sàng tìm kiếm Anime</h2>
+                    <p>Chọn phương thức tìm kiếm bên trái, nhập từ khóa hoặc mô tả và nhấn Tìm kiếm.</p>
+                </div>
+
+                <!-- Loading State -->
+                <div class="state-view loading-state hidden" id="loading-view">
+                    <div class="spinner"></div>
+                    <p>Đang xử lý truy vấn và tính toán độ tương đồng...</p>
+                </div>
+
+                <!-- Error State -->
+                <div class="state-view error-state hidden" id="error-view">
+                    <div class="error-icon">⚠️</div>
+                    <h2>Đã xảy ra lỗi</h2>
+                    <p id="error-message">Không thể kết nối đến máy chủ hoặc tham số không hợp lệ.</p>
+                </div>
+
+                <!-- Single Model Results View -->
+                <div class="results-view hidden" id="single-results-view">
+                    <div class="results-meta">
+                        <h2>Kết quả tìm kiếm</h2>
+                        <span class="results-badge" id="results-info">Tìm thấy 0 kết quả bằng model: ...</span>
+                    </div>
+                    <div class="cards-grid" id="results-grid">
+                        <!-- Result cards will be added here -->
+                    </div>
+                </div>
+
+                <!-- Compare Models Results View -->
+                <div class="compare-view hidden" id="compare-results-view">
+                    <div class="results-meta">
+                        <h2>So sánh kết quả các Model</h2>
+                        <span class="results-badge" id="compare-info">So sánh song song cho câu truy vấn của bạn</span>
+                    </div>
+                    <div class="compare-columns" id="compare-columns-container">
+                        <!-- Dynamic columns will be generated here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script src="/ui/app.js"></script>
+</body>
+</html>

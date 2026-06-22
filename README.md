@@ -1,9 +1,16 @@
 # Anime Vector Space Model — Semantic Search
 
-Đồ án cuối kỳ NLP: xây dựng **Vector Space Model** cho tìm kiếm ngữ nghĩa trên dataset Anime (Kaggle), lưu trữ embedding trong **Milvus**, và **so sánh 2 embedding model**:
+Đồ án cuối kỳ NLP: xây dựng **Vector Space Model** cho tìm kiếm ngữ nghĩa trên dataset Anime (Kaggle), lưu trữ dense embedding trong **Milvus**, và **so sánh 1 traditional Vector Space Model baseline và 2 dense embedding models**:
 
+- **TF-IDF + Cosine Similarity** — traditional sparse Vector Space Model baseline, chạy bằng scikit-learn, không lưu vào Milvus
 - [`intfloat/e5-small-v2`](https://huggingface.co/intfloat/e5-small-v2) — 384 chiều, dùng prefix `query:` / `passage:`
 - [`sentence-transformers/all-MiniLM-L6-v2`](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) — 384 chiều, không cần prefix
+
+| Model | Vector type | Search engine | Vai trò |
+|---|---|---|---|
+| TF-IDF + Cosine Similarity | Sparse vector | scikit-learn | Traditional VSM baseline |
+| e5-small-v2 | Dense 384-d vector | Milvus | Retrieval-oriented semantic model |
+| all-MiniLM-L6-v2 | Dense 384-d vector | Milvus | Lightweight semantic model |
 
 Toàn bộ phân tích nằm ở **Mục 3** trong `vector-space-model.ipynb`, kèm một **FastAPI** (`apps/`) để import dữ liệu và truy vấn.
 
@@ -33,7 +40,7 @@ final-project/
     ├── main.py                 # khởi tạo app, endpoint /, /models
     ├── config.py               # MODEL_REGISTRY, Settings (.env)
     ├── cli.py                  # pull-models / import-data / stats
-    ├── services/               # data_loader, embedding, milvus_store, search, evaluation
+    ├── services/               # data_loader, embedding, milvus_store, search, tfidf_search, evaluation
     ├── controller/             # nghiệp vụ import & search
     └── router/                 # /import, /search, /search/similar, /search/compare
 ```
@@ -125,7 +132,8 @@ Chọn kernel `.venv` rồi chạy **Mục 3**. Nội dung:
 
 - **3.0** Thiết lập & nạp dữ liệu
 - **3.1** Tiền xử lý (document, phân bố độ dài)
-- **3.2** Sinh embedding & kho vector (tốc độ encode)
+- **3.2.0** Baseline TF-IDF Vector Space Model
+- **3.2.1** Sinh dense embedding & kho vector Milvus
 - **3.3** Truy vấn free-text → xếp hạng; tìm anime tương tự; ma trận cosine
 - **3.4** Đánh giá (Precision@K, Recall@K, MRR, nDCG@K) & trực quan hoá
 - **3.5** Nhận xét & kết luận so sánh
@@ -149,6 +157,8 @@ Swagger UI: **http://localhost:8000/docs**
 | POST | `/search` | Truy vấn free-text |
 | POST | `/search/similar` | Tìm anime tương tự (more-like-this) |
 | POST | `/search/compare` | So sánh kết quả 2 model |
+| POST | `/search/tfidf` | Truy vấn free-text bằng TF-IDF in-memory |
+| POST | `/search/tfidf/similar` | Tìm anime tương tự bằng TF-IDF in-memory |
 
 Ví dụ:
 
@@ -158,12 +168,29 @@ curl -X POST http://localhost:8000/search \
   -d '{"query": "epic fantasy adventure with magic", "model": "e5-small-v2", "top_k": 5}'
 ```
 
+TF-IDF free-text search:
+
+```bash
+curl -X POST http://localhost:8000/search/tfidf \
+  -H "Content-Type: application/json" \
+  -d '{"query": "epic fantasy adventure with magic", "top_k": 5}'
+```
+
+TF-IDF similar anime:
+
+```bash
+curl -X POST http://localhost:8000/search/tfidf/similar \
+  -H "Content-Type: application/json" \
+  -d '{"anime_name": "Naruto", "top_k": 5}'
+```
+
 ---
 
-## 8. Kết quả so sánh (300 query, Top-K=10)
+## 8. Kết quả so sánh 3 model
 
 | Model | Precision@10 | Recall@10 | MRR | nDCG@10 | ms/query |
-|---|---|---|---|---|---|
+|---|---:|---:|---:|---:|---:|
+| TF-IDF baseline | TBD | TBD | TBD | TBD | TBD |
 | **e5-small-v2** | **0.377** | **0.052** | **0.724** | **0.424** | 2.28 |
 | all-MiniLM-L6-v2 | 0.260 | 0.036 | 0.626 | 0.316 | **1.11** |
 
